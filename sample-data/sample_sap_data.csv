@@ -1,0 +1,6 @@
+date,plant_code,activity_type,quantity,unit
+2023-01-01,PLANT-A,diesel,150.5,L
+2023-01-05,PLANT-B,natural_gas,300,m3
+2023-01-10,PLANT-A,petrol,80,L
+2023-01-15,PLANT-C,diesel,500,L
+2023-01-20,PLANT-A,lpg,120,L

@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm install --ignore-scripts && pnpm --filter @workspace/esg-dashboard build",
+  "outputDirectory": "artifacts/esg-dashboard/dist/public",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://esg-api.onrender.com/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

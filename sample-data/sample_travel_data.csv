@@ -1,0 +1,6 @@
+date,employee_id,expense_type,distance_km,unit,origin,destination
+2023-02-01,EMP-001,short flight,850,km,LHR,CDG
+2023-02-02,EMP-001,hotel,2,night,,
+2023-02-04,EMP-001,taxi,45,km,CDG,Paris Center
+2023-02-10,EMP-002,long flight,5500,km,JFK,LHR
+2023-02-15,EMP-003,train,320,km,London,Manchester

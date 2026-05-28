@@ -1,0 +1,448 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Breathe ESG data ingestion and review platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: companies
+    description: Company management
+  - name: records
+    description: Emission records review
+  - name: uploads
+    description: Data ingestion uploads
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /companies:
+    get:
+      operationId: listCompanies
+      tags: [companies]
+      summary: List all companies
+      responses:
+        "200":
+          description: List of companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Company"
+    post:
+      operationId: createCompany
+      tags: [companies]
+      summary: Create a company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+
+  /companies/{id}:
+    get:
+      operationId: getCompany
+      tags: [companies]
+      summary: Get a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Company
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCompany
+      tags: [companies]
+      summary: Update a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteCompany
+      tags: [companies]
+      summary: Delete a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /companies/{id}/dashboard:
+    get:
+      operationId: getCompanyDashboard
+      tags: [companies]
+      summary: Get dashboard summary for a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "404":
+          description: Not found
+
+  /companies/{id}/records:
+    get:
+      operationId: listCompanyRecords
+      tags: [records]
+      summary: List emission records for a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, approved, rejected, flagged]
+        - name: sourceType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [sap, utility, travel]
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmissionRecord"
+
+  /records/{id}/status:
+    patch:
+      operationId: updateRecordStatus
+      tags: [records]
+      summary: Update the status of an emission record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordStatusUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmissionRecord"
+        "404":
+          description: Not found
+
+  /companies/{id}/uploads:
+    get:
+      operationId: listCompanyUploads
+      tags: [uploads]
+      summary: List uploads for a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Uploads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DataUpload"
+
+  /companies/{id}/uploads/{sourceType}:
+    post:
+      operationId: uploadData
+      tags: [uploads]
+      summary: Upload data file for a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: sourceType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [sap, utility, travel]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadInput"
+      responses:
+        "201":
+          description: Upload result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResult"
+        "400":
+          description: Invalid data
+        "404":
+          description: Company not found
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    Company:
+      type: object
+      required: [id, name, isSample, createdAt, recordCount]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        isSample:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        recordCount:
+          type: integer
+
+    CompanyInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+
+    CompanyUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+
+    DashboardSummary:
+      type: object
+      required: [totalCo2Kg, scope1Co2Kg, scope2Co2Kg, scope3Co2Kg, pendingCount, approvedCount, rejectedCount, flaggedCount, bySource, hasData]
+      properties:
+        totalCo2Kg:
+          type: number
+        scope1Co2Kg:
+          type: number
+        scope2Co2Kg:
+          type: number
+        scope3Co2Kg:
+          type: number
+        pendingCount:
+          type: integer
+        approvedCount:
+          type: integer
+        rejectedCount:
+          type: integer
+        flaggedCount:
+          type: integer
+        hasData:
+          type: boolean
+        bySource:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceSummary"
+
+    SourceSummary:
+      type: object
+      required: [sourceType, co2Kg, recordCount]
+      properties:
+        sourceType:
+          type: string
+        co2Kg:
+          type: number
+        recordCount:
+          type: integer
+
+    EmissionRecord:
+      type: object
+      required: [id, companyId, sourceType, scope, activityType, quantity, unit, co2Kg, status, importedAt]
+      properties:
+        id:
+          type: integer
+        companyId:
+          type: integer
+        sourceType:
+          type: string
+        scope:
+          type: integer
+        activityType:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        co2Kg:
+          type: number
+        status:
+          type: string
+          enum: [pending, approved, rejected, flagged]
+        notes:
+          type: ["string", "null"]
+        importedAt:
+          type: string
+          format: date-time
+        approvedAt:
+          type: ["string", "null"]
+          format: date-time
+        approvedBy:
+          type: ["string", "null"]
+        uploadId:
+          type: ["integer", "null"]
+        rawData:
+          type: object
+          additionalProperties: true
+
+    RecordStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [pending, approved, rejected, flagged]
+        notes:
+          type: string
+        approvedBy:
+          type: string
+
+    DataUpload:
+      type: object
+      required: [id, companyId, sourceType, filename, status, totalRows, importedRows, errorRows, uploadedAt]
+      properties:
+        id:
+          type: integer
+        companyId:
+          type: integer
+        sourceType:
+          type: string
+        filename:
+          type: string
+        status:
+          type: string
+          enum: [processing, completed, failed]
+        totalRows:
+          type: integer
+        importedRows:
+          type: integer
+        errorRows:
+          type: integer
+        uploadedAt:
+          type: string
+          format: date-time
+        errorLog:
+          type: ["string", "null"]
+
+    UploadInput:
+      type: object
+      required: [filename, csvData]
+      properties:
+        filename:
+          type: string
+        csvData:
+          type: string
+          description: Raw CSV content as string
+
+    UploadResult:
+      type: object
+      required: [upload, importedRows, errorRows, errors]
+      properties:
+        upload:
+          $ref: "#/components/schemas/DataUpload"
+        importedRows:
+          type: integer
+        errorRows:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
