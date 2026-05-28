@@ -1,0 +1,6 @@
+billing_period,meter_id,consumption_kwh,unit,supplier
+2023-Jan,METER-991,4500.5,kWh,British Gas
+2023-Feb,METER-991,4200.0,kWh,British Gas
+2023-Mar,METER-991,3900.2,kWh,British Gas
+2023-Jan,METER-882,1200.0,kWh,E.ON
+2023-Feb,METER-882,1150.0,kWh,E.ON
